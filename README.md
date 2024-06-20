@@ -1,2 +1,2 @@
 # docker-spring
- learining micro services
+ learning micro services
