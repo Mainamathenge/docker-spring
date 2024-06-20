@@ -1,0 +1,70 @@
+services:
+  postgres-server:
+    image: postgres
+    hostname: postgres-server
+    ports:
+      - "5432:5432"
+    user: postgres
+    command: postgres -c 'max_connections=250'
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      start_period: 5s
+      timeout: 3s
+      retries: 5
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+    networks:
+      - joseph
+
+  configserver:
+    image: "josephmaina/configserver"
+    container_name: configserver-ms
+    ports:
+      - "8071:8071"
+    healthcheck:
+      test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - joseph
+
+  accounts:
+    image: "josephmaina/accounts"
+    container_name: accounts-ms
+    ports:
+      - "8080:8080"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    networks:
+      - joseph
+
+  loans:
+    image: "josephmaina/loans"
+    container_name: loans-ms
+    ports:
+      - "8090:8090"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    networks:
+      - joseph
+
+  cards:
+    image: "josephmaina/cards"
+    container_name: cards-ms
+    ports:
+      - "9000:9000"
+    depends_on:
+      configserver:
+        condition: service_healthy
+    networks:
+      - joseph
+
+networks:
+  joseph:
+    driver: bridge

@@ -1,0 +1,27 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: "loans"
+  profiles:
+    active: "prod"
+  jpa:
+    open-in-view: false
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/loansdb"
+    username: "postgres"
+    password: "postgres"
+  config:
+    import: "optional:configserver:http://localhost:8071/loans"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
